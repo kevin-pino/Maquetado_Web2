@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bloques vs linea - Guia Visual</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 20px auto;
+      color: #333;
+    }
+
+    /*Estilo para Elementos de Bloque */
+    .ejemplo-bloque {
+      background-color: #ffe0e0; /*Rojo claro */
+      border: 2px solid #ff5f5f;
+      margin: 10px 0;
+      padding: 10px;
+    }
+
+    /*Etilo para Elementos en Linea */
+    .ejemplo-linea {
+      background-color: #e0f7ff; /*Azul claro */
+      border: 2px solid #5fd2ff;
+      padding: 2px 5px;
+    }
+    
+    hr {border: 0; border-top: 1px solid #ccc; margin: 40px 0;}
+    code { background: #eee; padding: 2px 4px; border-radius: 4px;}      
+  </style>
+</head>
+<body>
+  
+    <h1>Guia de Flujo HTML</h1>
+
+    <SECtion>
+      <H2>1. Elementos de Bloque (<code>display: block;</code>)</H2>
+      <P> observa como estas cajas ocupan <strong>todo el ancho</strong> y se aplica una sobre otra:</P>
+
+      <div class="ejemplo-bloque">soy un <code>&lt;div&gt;</code>(bloque 1)</div>
+      <div class="ejemplo-bloque">soy otro <code>&lt;div&gt;</code>(bloque 2)</div>
+
+      <p><em>Conclusion:</em>Siempre empiezan en una linea nueva</p>
+    </SECtion>
+
+    <hr>
+
+    <section>
+      <h2>2. Elementos en Linea (<code>display: inline;</code>)</h2>
+      <p>Observa como estos elementos fluyen <strong>Dentro del texto</strong>y solo ocupa el ancho del contenido</p>
+
+    </section>
+</body>
+</html>
