@@ -1,0 +1,32 @@
+li {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 30px;
+}
+.Liga_Betplay {
+  color: green;
+}
+/*En CSS, para seleccionar un elemento por su clase, se utiliza el punto (.) seguido del nombre de la clase. y en ID se hace lo mismo pero remplazando el punto por el #.*/
+#Liga_Betplay {
+  color: red;
+}
+ul {
+  list-style-type: square;
+  /*El list-style-type se utiliza para cambiar el tipo de viñeta en una lista.*/
+  border: 5px solid black;
+  /*El border se utiliza para darle un borde al elemento, en este caso la lista*/
+  width: 400px;
+  /*El width se utiliza para darle un ancho al elemento, en este caso la lista*/
+  height: 170px;
+  /*El height se utiliza para darle una altura al elemento, en este caso la lista*/
+}
+h1 {
+  color: blue;
+  padding: 40px;
+  text-align: center;
+  /*el text-align se utiliza para alinear el texto*/
+  border: black solid 50px;
+  margin: 100px 10px 50px 40px;
+  /*el margin se maneja en el orden: arriba, derecha, abajo, izquierda*/
+  background-color: chocolate;
+  /*el background-color se utiliza para darle color al fondo del elemento, en este caso el h1*/
+}
