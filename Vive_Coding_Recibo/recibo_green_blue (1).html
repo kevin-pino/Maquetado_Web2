@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recibo - Green &amp; Blue Aquamarine</title>
+  <style>
+    /* ============================================================
+       RESET
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #d4d4d4;
+      font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 24px 0;
+      min-height: 100vh;
+    }
+
+    /* ============================================================
+       SCALE CONTAINER
+       El recibo tiene un ancho de diseño fijo de 760px.
+       JS ajusta --scale para que quepa en cualquier pantalla.
+    ============================================================ */
+    .scale-container {
+      --scale: 1;
+      transform: scale(var(--scale));
+      transform-origin: top center;
+      /* el margen negativo colapsa el espacio vacío cuando se reduce */
+      margin-bottom: calc((760px * var(--scale)) - 760px);
+    }
+
+    /* ============================================================
+       RECIBO WRAPPER — ancho de diseño fijo 760px
+    ============================================================ */
+    .recibo-wrapper {
+      background: #fff;
+      width: 760px;
+      padding: 14px 18px 20px 18px;
+      border: 1px solid #bbb;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.20);
+    }
+
+    /* ============================================================
+       HEADER TOP: logo | checkboxes+tel | recibo-box
+    ============================================================ */
+    .header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    /* LOGO */
+    .logo-block {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      flex-shrink: 0;
+      width: 186px;
+    }
+    .logo-name {
+      display: flex;
+      align-items: center;
+      line-height: 1;
+    }
+    .logo-green {
+      font-size: 27px; font-weight: 900; color: #6f8f2c;
+      font-family: 'Arial Black', Arial, sans-serif;
+      text-transform: uppercase; letter-spacing: -0.5px;
+    }
+    .logo-blue {
+      font-size: 27px; font-weight: 900; color: #2f97da;
+      font-family: 'Arial Black', Arial, sans-serif;
+      text-transform: uppercase; letter-spacing: -0.5px;
+    }
+    .logo-icon {
+      display: inline-flex; align-items: center;
+      width: 22px; height: 24px; margin: 0 3px; flex-shrink: 0;
+    }
+    .logo-icon svg { width: 22px; height: 24px; }
+    .logo-sub {
+      font-size: 11px; color: #2f97da; letter-spacing: 3.5px;
+      font-weight: 400; margin-top: 2px;
+      text-transform: lowercase;
+    }
+    .logo-tagline {
+      font-size: 7px; color: #2f97da; margin-top: 2px;
+      font-style: italic; letter-spacing: 0.1px;
+    }
+
+    /* CENTRO: checkboxes + teléfono */
+    .center-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      padding-top: 2px;
+      min-width: 0;
+    }
+    .checkboxes-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      margin-bottom: 5px;
+    }
+    /* texto a la izquierda, cajita a la derecha — igual que el original */
+    .checkbox-item {
+      display: flex; align-items: center;
+      gap: 3px;
+      font-size: 9.5px; font-weight: 700; color: #7a8b30;
+      font-family: Arial, Helvetica, sans-serif;
+      text-transform: uppercase; letter-spacing: 0.1px;
+      white-space: nowrap; cursor: pointer;
+      flex-direction: row;   /* texto → cajita */
+    }
+    .checkbox-item input[type="checkbox"] {
+      width: 10px; height: 10px; margin: 0;
+      appearance: none; -webkit-appearance: none;
+      border: 1.5px solid #444; background: #fff;
+      flex-shrink: 0; cursor: pointer;
+      order: 2;   /* fuerza la cajita DESPUÉS del texto */
+    }
+    .checkbox-item span {
+      order: 1;   /* texto ANTES de la cajita */
+    }
+    .checkbox-item input[type="checkbox"]:checked { background: #2f97da; }
+
+    .phone-row {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 12px; color: #2f97da; font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* RECIBO BOX */
+    .recibo-box {
+      border: 2px solid #2f97da; border-radius: 6px;
+      padding: 4px 12px 6px 12px;
+      flex-shrink: 0; width: 138px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .recibo-label {
+      font-size: 11px; font-weight: 700; color: #2f97da;
+      letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 2px;
+    }
+    .recibo-num-row {
+      display: flex; align-items: baseline; gap: 5px;
+    }
+    .recibo-no {
+      font-size: 13px; font-weight: 700; color: #2f97da;
+    }
+    .recibo-num {
+      font-size: 24px; font-weight: 900; color: #c0392b;
+      font-family: 'Arial Black', 'Courier New', monospace;
+      letter-spacing: 3px; line-height: 1;
+      border: none; outline: none; background: transparent;
+      width: 80px; text-align: center;
+      padding: 0; caret-color: #c0392b;
+    }
+    .recibo-num:focus { background: #fff5f5; border-radius: 2px; }
+
+    /* ============================================================
+       FILA FECHAS — posicionada a la derecha del logo
+    ============================================================ */
+    .fechas-wrapper {
+      display: flex;
+      justify-content: flex-start;
+      padding-left: 194px;   /* mismo ancho que .logo-block + gap */
+      margin-top: 5px;
+    }
+    .fechas-row {
+      display: flex; align-items: center; gap: 18px;
+    }
+    .fecha-group {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .fecha-label {
+      font-size: 9px; font-weight: 700; color: #6f8f2c;
+      white-space: nowrap; text-align: center; line-height: 1.25;
+    }
+    .fecha-boxes { display: flex; gap: 3px; }
+    .fecha-box {
+      height: 22px; border: 1.5px solid #2f97da; background: transparent;
+      font-size: 11px; text-align: center;
+      font-family: Arial, Helvetica, sans-serif;
+      outline: none; color: #222; padding: 0 2px;
+    }
+    .fecha-box.dd { width: 28px; }
+    .fecha-box.mm { width: 28px; }
+    .fecha-box.aa { width: 38px; }
+    .fecha-box:focus { background: #f0f7ff; }
+
+    /* ============================================================
+       CAMPOS — Señor, Dirección, Teléfono, Ciudad, Edad, Peso, Talla, PPL
+    ============================================================ */
+    .fields-section { margin-top: 8px; }
+
+    .field-row {
+      display: flex; align-items: baseline; gap: 10px;
+      margin-bottom: 4px;
+    }
+    .field-group {
+      display: flex; align-items: baseline; min-width: 0;
+    }
+    .field-label {
+      font-size: 10px; font-weight: 700; color: #6f8f2c;
+      white-space: nowrap; margin-right: 3px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .field-input {
+      border: none; border-bottom: 1.5px solid #2f97da;
+      outline: none; font-size: 10px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #222; background: transparent;
+      padding: 0 2px 1px 2px; min-width: 0; width: 100%;
+    }
+    .field-input:focus { background: #f0f7ff; }
+
+    /* fila 1: Señor + Dirección */
+    .row1 .fg-senor  { flex: 1.3; }
+    .row1 .fg-dir    { flex: 1; }
+
+    /* fila 2: Tel + Ciudad + Edad + Peso + Talla + PPL */
+    .row2 .fg-tel    { flex: 1.8; }
+    .row2 .fg-ciudad { flex: 1.2; }
+    .row2 .fg-edad   { flex: 0.7; }
+    .row2 .fg-peso   { flex: 0.7; }
+    .row2 .fg-talla  { flex: 0.7; }
+    .row2 .fg-ppl    { flex: 0.55; }
+
+    /* ============================================================
+       TABLA PRINCIPAL
+    ============================================================ */
+    .tabla-main {
+      margin-top: 7px;
+      border: 1.5px solid #2f97da;
+      width: 100%;
+    }
+
+    /* --- Encabezado --- */
+    .tabla-header {
+      display: flex;
+      border-bottom: 1.5px solid #2f97da;
+    }
+    .th-desc {
+      flex: 1; text-align: center; padding: 4px 0;
+      font-size: 11px; font-weight: 700; color: #6f8f2c;
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .th-vrtotal {
+      width: 118px; flex-shrink: 0;
+      text-align: center; padding: 4px 2px;
+      font-size: 9.5px; font-weight: 700; color: #6f8f2c;
+      text-transform: uppercase; border-left: 1.5px solid #2f97da;
+      line-height: 1.2;
+    }
+
+    /* --- Cuerpo descripción --- */
+    .tabla-body {
+      display: flex;
+      border-bottom: 1.5px solid #2f97da;
+      min-height: 170px;
+    }
+    .td-desc {
+      flex: 1; padding: 4px 6px;
+      border-right: 1.5px solid #2f97da;
+    }
+    .td-desc textarea,
+    .td-vrtotal textarea {
+      width: 100%; height: 100%; min-height: 162px;
+      border: none; outline: none; resize: none;
+      font-size: 10px; font-family: Arial, Helvetica, sans-serif;
+      background: transparent; color: #222; display: block;
+    }
+    .td-vrtotal {
+      width: 118px; flex-shrink: 0; padding: 4px 4px;
+    }
+    .td-vrtotal textarea { text-align: right; }
+
+    /* --- Observaciones --- */
+    .tabla-obs-row {
+      display: flex;
+      border-bottom: 1.5px solid #2f97da;
+    }
+    .obs-block {
+      flex: 1;
+      border-right: 1.5px solid #2f97da;
+      display: flex; flex-direction: column;
+    }
+    .td-obs-label {
+      font-size: 10px; font-weight: 700; color: #6f8f2c;
+      text-transform: uppercase; padding: 4px 6px 2px 6px;
+    }
+    .obs-block textarea {
+      flex: 1; border: none; outline: none; resize: none;
+      font-size: 10px; font-family: Arial, Helvetica, sans-serif;
+      background: transparent; color: #222;
+      padding: 2px 6px 6px 6px; min-height: 46px;
+    }
+    .obs-right { width: 118px; flex-shrink: 0; }
+
+    /* --- Total --- */
+    .tabla-total-row {
+      display: flex;
+      justify-content: flex-end;
+      border-bottom: 1.5px solid #2f97da;
+    }
+    .total-label-cell {
+      border-left: 1.5px solid #2f97da;
+      border-right: 1.5px solid #2f97da;
+      font-size: 10.5px; font-weight: 700; color: #6f8f2c;
+      text-transform: uppercase; padding: 5px 12px;
+      letter-spacing: 0.5px;
+    }
+    .total-value-cell {
+      width: 118px; flex-shrink: 0;
+      display: flex; align-items: center;
+      padding: 3px 5px; gap: 2px;
+    }
+    .total-dollar {
+      font-size: 11px; font-weight: 700; color: #6f8f2c;
+    }
+    .total-input {
+      flex: 1; border: none; outline: none;
+      font-size: 10px; font-family: Arial, Helvetica, sans-serif;
+      background: transparent; color: #222; text-align: right;
+    }
+
+    /* ============================================================
+       FIRMAS
+    ============================================================ */
+    .firmas-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 24px;
+      padding: 0 30px;
+      gap: 60px;
+    }
+    .firma-group {
+      display: flex; flex-direction: column;
+      align-items: center; flex: 1;
+    }
+    .firma-line {
+      width: 100%; border-bottom: 1.5px solid #2f97da;
+      margin-bottom: 4px;
+    }
+    .firma-label {
+      font-size: 9px; font-weight: 700; color: #6f8f2c;
+      text-transform: uppercase; letter-spacing: 0.5px; text-align: center;
+    }
+
+    /* ============================================================
+       PRINT
+    ============================================================ */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .scale-container { transform: none !important; margin-bottom: 0 !important; }
+      .recibo-wrapper { box-shadow: none; border: none; width: 100%; }
+      @page { size: A5 landscape; margin: 8mm; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="scale-container" id="scaleContainer">
+<div class="recibo-wrapper">
+
+  <!-- ===== HEADER TOP ===== -->
+  <div class="header-top">
+
+    <!-- LOGO -->
+    <div class="logo-block">
+      <div class="logo-name">
+        <span class="logo-green">GREEN</span>
+        <span class="logo-icon">
+          <svg viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="11" cy="9" rx="7" ry="9" fill="#6f8f2c"/>
+            <ellipse cx="11" cy="8" rx="4" ry="5.5" fill="#9dc73d" opacity="0.55"/>
+            <rect x="9.5" y="16" width="3" height="6" rx="1.5" fill="#6f8f2c"/>
+          </svg>
+        </span>
+        <span class="logo-blue">BLUE</span>
+      </div>
+      <div class="logo-sub">a q u a m a r i n e</div>
+      <div class="logo-tagline">Efecto y prevención en la funcionalidad física</div>
+    </div>
+
+    <!-- CHECKBOXES + TELÉFONO -->
+    <div class="center-block">
+      <div class="checkboxes-row">
+        <label class="checkbox-item"><span>REHABILITACIÓN</span><input type="checkbox"></label>
+        <label class="checkbox-item"><span>ENTRETENIMIENTO</span><input type="checkbox"></label>
+        <label class="checkbox-item"><span>MASAJES</span><input type="checkbox"></label>
+        <label class="checkbox-item"><span>NATACIÓN</span><input type="checkbox"></label>
+      </div>
+      <div class="phone-row">
+        <span style="font-size:13px;">&#9743;</span>
+        <span>318 868 8008 / 310 740 6038</span>
+      </div>
+    </div>
+
+    <!-- RECIBO Nº -->
+    <div class="recibo-box">
+      <div class="recibo-label">RECIBO</div>
+      <div class="recibo-num-row">
+        <span class="recibo-no">N<sup style="font-size:9px;vertical-align:super;">o</sup></span>
+        <input class="recibo-num" type="text" value="0456" maxlength="6" id="reciboNum">
+      </div>
+    </div>
+
+  </div><!-- /header-top -->
+
+  <!-- ===== FECHAS ===== -->
+  <div class="fechas-wrapper">
+    <div class="fechas-row">
+      <div class="fecha-group">
+        <div class="fecha-label">Fecha<br>Inicio</div>
+        <div class="fecha-boxes">
+          <input class="fecha-box dd" type="text" maxlength="2" placeholder="DD">
+          <input class="fecha-box mm" type="text" maxlength="2" placeholder="MM">
+          <input class="fecha-box aa" type="text" maxlength="4" placeholder="AAAA">
+        </div>
+      </div>
+      <div class="fecha-group">
+        <div class="fecha-label">Fecha<br>Finalización</div>
+        <div class="fecha-boxes">
+          <input class="fecha-box dd" type="text" maxlength="2" placeholder="DD">
+          <input class="fecha-box mm" type="text" maxlength="2" placeholder="MM">
+          <input class="fecha-box aa" type="text" maxlength="4" placeholder="AAAA">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CAMPOS ===== -->
+  <div class="fields-section">
+
+    <!-- Fila 1: Señor + Dirección -->
+    <div class="field-row row1">
+      <div class="field-group fg-senor">
+        <span class="field-label">Señor (es):</span>
+        <input class="field-input" type="text">
+      </div>
+      <div class="field-group fg-dir">
+        <span class="field-label">Dirección:</span>
+        <input class="field-input" type="text">
+      </div>
+    </div>
+
+    <!-- Fila 2: Tel + Ciudad + Edad + Peso + Talla + PPL -->
+    <div class="field-row row2">
+      <div class="field-group fg-tel">
+        <span class="field-label">Teléfono:</span>
+        <input class="field-input" type="text">
+      </div>
+      <div class="field-group fg-ciudad">
+        <span class="field-label">Ciudad:</span>
+        <input class="field-input" type="text">
+      </div>
+      <div class="field-group fg-edad">
+        <span class="field-label">Edad:</span>
+        <input class="field-input" type="text">
+      </div>
+      <div class="field-group fg-peso">
+        <span class="field-label">Peso:</span>
+        <input class="field-input" type="text">
+      </div>
+      <div class="field-group fg-talla">
+        <span class="field-label">Talla:</span>
+        <input class="field-input" type="text">
+      </div>
+      <div class="field-group fg-ppl">
+        <span class="field-label">PPL:</span>
+        <input class="field-input" type="text">
+      </div>
+    </div>
+
+  </div><!-- /fields-section -->
+
+  <!-- ===== TABLA PRINCIPAL ===== -->
+  <div class="tabla-main">
+
+    <div class="tabla-header">
+      <div class="th-desc">DESCRIPCIÓN</div>
+      <div class="th-vrtotal">VR. TOTAL</div>
+    </div>
+
+    <div class="tabla-body">
+      <div class="td-desc"><textarea></textarea></div>
+      <div class="td-vrtotal"><textarea></textarea></div>
+    </div>
+
+    <div class="tabla-obs-row">
+      <div class="obs-block">
+        <div class="td-obs-label">OBSERVACIONES</div>
+        <textarea></textarea>
+      </div>
+      <div class="obs-right"></div>
+    </div>
+
+    <div class="tabla-total-row">
+      <div class="total-label-cell">TOTAL</div>
+      <div class="total-value-cell">
+        <span class="total-dollar">$</span>
+        <input class="total-input" type="text">
+      </div>
+    </div>
+
+  </div><!-- /tabla-main -->
+
+  <!-- ===== FIRMAS ===== -->
+  <div class="firmas-row">
+    <div class="firma-group">
+      <div class="firma-line"></div>
+      <div class="firma-label">FIRMA DEL INSTRUCTOR</div>
+    </div>
+    <div class="firma-group">
+      <div class="firma-line"></div>
+      <div class="firma-label">FIRMA DEL USUARIO</div>
+    </div>
+  </div>
+
+</div><!-- /recibo-wrapper -->
+</div><!-- /scale-container -->
+
+<script>
+  // Escala el recibo para que siempre quepa en el viewport,
+  // sin romper ningún elemento interno.
+  const DESIGN_WIDTH = 760;
+
+  function applyScale() {
+    const container = document.getElementById('scaleContainer');
+    const available = window.innerWidth;
+    // sólo reducir, nunca ampliar por encima de 1
+    const scale = Math.min(1, available / (DESIGN_WIDTH + 40));
+    container.style.setProperty('--scale', scale);
+    // compensar la altura que queda vacía al reducir
+    const designH = container.scrollHeight;
+    const scaledH  = designH * scale;
+    container.style.marginBottom = (scaledH - designH) + 'px';
+  }
+
+  applyScale();
+  window.addEventListener('resize', applyScale);
+</script>
+</body>
+</html>
